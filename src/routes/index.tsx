@@ -280,7 +280,7 @@ const formSchema = z.object({
 });
 
 function Contact() {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Partial<Record<"nombre" | "telefono" | "tipo" | "mensaje", string>>>({});
   const [sent, setSent] = useState(false);
   const inputCls = "w-full rounded-sm border border-input bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none";
 
