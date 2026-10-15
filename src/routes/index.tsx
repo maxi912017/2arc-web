@@ -114,7 +114,7 @@ function Header() {
       if (motion.matches || document.hidden) return;
       video.muted = true;
       video.defaultMuted = true;
-      void video.play().catch(() => setPlaying(false));
+      void video.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     };
     const updateMotion = () => {
       if (motion.matches) {
