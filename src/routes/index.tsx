@@ -17,10 +17,13 @@ import aboutPoster from "@/assets/empresa-poster.jpg.asset.json";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
+import imgLosa2 from "@/assets/obra-losa-2.jpg";
 import imgOficinas from "@/assets/obra-oficinas.jpg";
 import imgGym from "@/assets/obra-gym.jpg";
 import imgEifs from "@/assets/obra-eifs.jpg";
 import imgCocina from "@/assets/obra-cocina.jpg";
+import imgBanioAntes from "@/assets/obra-banio-antes.jpg";
+import imgBanioDespues from "@/assets/obra-banio-despues.jpg";
 import imgFachadaAntes from "@/assets/obra-fachada-antes.jpg";
 import imgFachadaDespues from "@/assets/obra-fachada-despues.jpg";
 
@@ -70,24 +73,48 @@ const FILTERS: { id: Cat; label: string }[] = [
   { id: "refacciones", label: "Refacciones" },
   { id: "proceso", label: "Proceso constructivo" },
 ];
-const PROJECTS: { cat: Exclude<Cat, "todas">; img: string; tag: string; title: string; text: string }[] = [
+const PROJECTS: {
+  cat: Exclude<Cat, "todas">;
+  img: string;
+  more?: string[];
+  tag: string;
+  title: string;
+  text: string;
+}[] = [
   { cat: "viviendas", img: imgResidencia, tag: "Llave en mano", title: "Residencia familiar 96 m²", text: "2 dormitorios, living-comedor y cocina, con orientación solar óptima y planos aprobados." },
   { cat: "comercial", img: imgNave, tag: "Nave logística", title: "Mayorista de Frutas y Verduras", text: "Estructura metálica de gran luz, piso H-30 para autoelevadores y sector de cámaras de frío." },
   { cat: "comercial", img: imgOficinas, tag: "Institucional", title: "Oficinas APAP General Pico", text: "Construcción y terminación integral con tabiquería técnica, iluminación y accesos confortables." },
   { cat: "comercial", img: imgGym, tag: "Adecuación", title: "Centro Moov Training", text: "Refacción de vivienda a consultorio kinésico y gimnasio funcional con apeos y refuerzos." },
-  { cat: "refacciones", img: imgCocina, tag: "Antes y después", title: "Remodelación de cocina y baño", text: "Cañerías nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
-  { cat: "proceso", img: imgLosa, tag: "Losas", title: "Hormigonado de losa de 226 m²", text: "Apuntalamiento, encofrado y llenado continuo con hormigón elaborado y control de recubrimientos." },
+  { cat: "refacciones", img: imgCocina, tag: "Refacciones", title: "Remodelación de cocina", text: "Demolición, cañerías e instalaciones eléctricas nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
+  { cat: "refacciones", img: imgBanioDespues, tag: "Refacciones", title: "Remodelación de baño", text: "Demolición de revoques, instalación de agua nueva, revestimientos cerámicos y colocación de sanitarios." },
+  { cat: "proceso", img: imgLosa, more: [imgLosa2], tag: "Losas", title: "Llenado de losa con hormigón elaborado", text: "Armado de encofrados, apuntalamiento y llenado continuo de losa, con verificación de recubrimientos de acero." },
   { cat: "proceso", img: imgEifs, tag: "EIFS", title: "Aislación exterior y sellado de fisuras", text: "Placas de EPS de alta densidad con base coat y malla sobre muros con grietas reparadas." },
 ];
 
 // Cada par se suma acá: el slider se renderiza a partir de esta lista.
-const COMPARISONS: { tag: string; title: string; text: string; before: string; after: string }[] = [
+// tall = el par es vertical (9:16), para no recortar techo ni piso.
+const COMPARISONS: {
+  tag: string;
+  title: string;
+  text: string;
+  before: string;
+  after: string;
+  tall?: boolean;
+}[] = [
   {
     tag: "Antes y después",
     title: "Renovación de fachada en vivienda familiar",
     text: "Retiro del revoque deteriorado y fisurado, nueva terminación continua con guardapolvos, acceso revestido en piedra y recambio de carpinterías y portón de garage.",
     before: imgFachadaAntes,
     after: imgFachadaDespues,
+  },
+  {
+    tag: "Antes y después",
+    title: "Remodelación de baño en vivienda familiar",
+    text: "Demolición de revoques y contrapiso, instalación nueva de agua y cloacas, revoque y cerámicos nuevos, y colocación de sanitarios y griferías.",
+    before: imgBanioAntes,
+    after: imgBanioDespues,
+    tall: true,
   },
 ];
 
@@ -369,13 +396,15 @@ function ComparisonCard({ item }: { item: (typeof COMPARISONS)[number] }) {
   const [pos, setPos] = useState(50);
   const [active, setActive] = useState(false);
   return (
-    <figure className="animate-rise overflow-hidden rounded-sm border border-border bg-card">
-      <div className="relative aspect-[4/3] w-full select-none overflow-hidden">
+    <figure
+      className={`animate-rise overflow-hidden rounded-sm border border-border bg-card ${item.tall ? "mx-auto w-full max-w-[380px]" : ""}`}
+    >
+      <div
+        className={`relative w-full select-none overflow-hidden ${item.tall ? "aspect-[9/16]" : "aspect-[4/3]"}`}
+      >
         <img
           src={item.after}
           alt={`${item.title}: después`}
-          width={1440}
-          height={1080}
           loading="lazy"
           className="absolute inset-0 size-full object-cover object-bottom"
         />
@@ -383,8 +412,6 @@ function ComparisonCard({ item }: { item: (typeof COMPARISONS)[number] }) {
           <img
             src={item.before}
             alt={`${item.title}: antes`}
-            width={1440}
-            height={1080}
             className="size-full object-cover object-bottom"
           />
         </div>
@@ -436,6 +463,58 @@ function ComparisonCard({ item }: { item: (typeof COMPARISONS)[number] }) {
   );
 }
 
+// Fotos de una misma obra: se rotan solas y se pausan al pasar el mouse o el foco.
+function ProjectMedia({ title, tag, srcs }: { title: string; tag: string; srcs: string[] }) {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const many = srcs.length > 1;
+
+  useEffect(() => {
+    if (!many || paused) return;
+    const t = window.setInterval(() => setI((v) => (v + 1) % srcs.length), 4200);
+    return () => window.clearInterval(t);
+  }, [many, paused, srcs.length]);
+
+  return (
+    <div
+      className="relative aspect-[4/3] overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
+      {srcs.map((src, n) => (
+        <img
+          key={src}
+          src={src}
+          alt={many ? `${title} — foto ${n + 1} de ${srcs.length}` : title}
+          loading="lazy"
+          width={1024}
+          height={768}
+          className={`absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105 ${n === i ? "opacity-100" : "opacity-0"}`}
+        />
+      ))}
+      <span className="absolute left-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">
+        {tag}
+      </span>
+      {many && (
+        <div className="absolute bottom-3 right-3 flex gap-1.5">
+          {srcs.map((src, n) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setI(n)}
+              aria-label={`Ver la foto ${n + 1} de ${srcs.length} de ${title}`}
+              aria-current={n === i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${n === i ? "w-5 bg-background" : "w-1.5 bg-background/50 hover:bg-background/80"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Works() {
   const [cat, setCat] = useState<Cat>("todas");
   const list = PROJECTS.filter((p) => cat === "todas" || p.cat === cat);
@@ -454,10 +533,7 @@ function Works() {
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
             <article key={p.title} className="animate-rise group overflow-hidden rounded-sm border border-border bg-card">
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img src={p.img} alt={p.title} loading="lazy" width={1024} height={768} className="size-full object-cover transition duration-700 group-hover:scale-105" />
-                <span className="absolute left-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">{p.tag}</span>
-              </div>
+              <ProjectMedia title={p.title} tag={p.tag} srcs={p.more ? [p.img, ...p.more] : [p.img]} />
               <div className="p-6">
                 <h3 className="text-lg font-extrabold text-card-foreground">{p.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.text}</p>
