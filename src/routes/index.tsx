@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   Home, Factory, Hammer, ThermometerSnowflake, MapPin, Phone, Instagram, Facebook,
+  Ruler, DraftingCompass,
   ShieldCheck, ClipboardCheck, CalendarClock, HardHat, Menu, X, ArrowRight, CheckCircle2, MessageCircle,
   ChevronsLeftRight,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import imgNaveAntes from "@/assets/obra-nave-antes.webp";
 import imgNaveDespues from "@/assets/obra-nave-despues.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
 import imgLosa2 from "@/assets/obra-losa-2.jpg";
+import imgLosaVideo from "@/assets/obra-losa-video.mp4";
 import imgOficinas from "@/assets/obra-oficinas.jpg";
 import imgGym from "@/assets/obra-gym.jpg";
 import imgEifs from "@/assets/obra-eifs.jpg";
@@ -64,6 +66,8 @@ const SERVICES = [
   { icon: Factory, title: "Obras comerciales e industriales", text: "Naves logísticas, galpones con estructura metálica y locales comerciales con pisos de hormigón industrial." },
   { icon: Hammer, title: "Refacciones y ampliaciones", text: "Remodelación integral de cocinas, baños y viviendas IPAV, con instalaciones nuevas y terminaciones de calidad." },
   { icon: ThermometerSnowflake, title: "Aislación térmica EIFS", text: "Eficiencia energética para el clima de La Pampa: menos frío en invierno, menos calor en verano." },
+  { icon: Ruler, title: "Dirección de obra", text: "Replanteo, control de materiales y de cuadrillas, y verificación de cada etapa antes de continuar. Un solo responsable técnico del principio al fin." },
+  { icon: DraftingCompass, title: "Planos reglamentarios y trámites", text: "Anteproyecto y planos conforme a la normativa municipal, presentados y aprobados antes de empezar a construir." },
 ];
 
 type Cat = "todas" | "viviendas" | "comercial" | "refacciones" | "proceso";
@@ -78,6 +82,7 @@ type Project = {
   cat: Exclude<Cat, "todas">;
   img: string;
   more?: string[];
+  video?: string;
   before?: string;
   tag: string;
   title: string;
@@ -91,7 +96,7 @@ const PROJECTS: Project[] = [
   { cat: "refacciones", img: imgCocina, tag: "Refacciones", title: "Remodelación de cocina", text: "Demolición, cañerías e instalaciones eléctricas nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
   { cat: "refacciones", img: imgBanioDespues, before: imgBanioAntes, tag: "Refacciones", title: "Remodelación de baño", text: "Demolición de revoques y contrapiso, instalación nueva de agua y cloacas, cerámicos, sanitarios y griferías." },
   { cat: "refacciones", img: imgFachadaDespues, before: imgFachadaAntes, tag: "Refacciones", title: "Renovación de fachada en vivienda familiar", text: "Retiro del revoque deteriorado y fisurado, terminación continua con guardapolvos, acceso en piedra y recambio de carpinterías." },
-  { cat: "proceso", img: imgLosa, more: [imgLosa2], tag: "Losas", title: "Llenado de losa con hormigón elaborado", text: "Armado de encofrados, apuntalamiento y llenado continuo de losa, con verificación de recubrimientos de acero." },
+  { cat: "proceso", img: imgLosa, more: [imgLosa2], video: imgLosaVideo, tag: "Losas", title: "Llenado de losa con hormigón elaborado", text: "Armado de encofrados, apuntalamiento y llenado continuo de losa, con verificación de recubrimientos de acero." },
   { cat: "proceso", img: imgEifs, tag: "EIFS", title: "Aislación exterior y sellado de fisuras", text: "Placas de EPS de alta densidad con base coat y malla sobre muros con grietas reparadas." },
 ];
 
@@ -353,7 +358,7 @@ function Services() {
     <section id="servicios" className="bg-paper py-24 text-paper-foreground md:py-32">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionTitle eyebrow="Servicios" title="Todo lo que tu obra necesita, con un solo responsable" light />
-        <div className="mt-14 grid gap-px overflow-hidden rounded-sm bg-paper-foreground/10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-px overflow-hidden rounded-sm bg-paper-foreground/10 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s, i) => (
             <article key={s.title} className="reveal group relative bg-paper p-8 transition hover:bg-background hover:text-foreground" style={{ transitionDelay: `${i * 80}ms` }}>
               <span className="text-xs font-bold text-primary">0{i + 1}</span>
@@ -437,17 +442,41 @@ function ComparisonMedia({
   );
 }
 
-// Fotos de una misma obra: se rotan solas y se pausan al pasar el mouse o el foco.
-function ProjectMedia({ title, tag, srcs }: { title: string; tag: string; srcs: string[] }) {
+// Medios de una misma obra: el video, si hay, queda primero y no se rota solo; las fotos siguen rotando.
+function ProjectMedia({
+  title,
+  tag,
+  srcs,
+  video,
+}: {
+  title: string;
+  tag: string;
+  srcs: string[];
+  video?: string | undefined;
+}) {
+  const photoLabel = (n: number) => `la foto ${n + 1} de ${srcs.length} de ${title}`;
+  const slides = [
+    ...(video ? [{ mov: true, src: video, label: `el video de ${title}` }] : []),
+    ...srcs.map((src, n) => ({ mov: false, src, label: photoLabel(n) })),
+  ];
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
-  const many = srcs.length > 1;
+  const many = slides.length > 1;
+  const onVideo = slides[i]?.mov ?? false;
+  const vid = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!many || paused) return;
-    const t = window.setInterval(() => setI((v) => (v + 1) % srcs.length), 4200);
+    if (!many || paused || onVideo) return;
+    const t = window.setInterval(() => setI((v) => (v + 1) % slides.length), 4200);
     return () => window.clearInterval(t);
-  }, [many, paused, srcs.length]);
+  }, [many, paused, onVideo, slides.length]);
+
+  useEffect(() => {
+    const el = vid.current;
+    if (!el) return;
+    if (onVideo) void el.play().catch(() => undefined);
+    else el.pause();
+  }, [onVideo]);
 
   return (
     <div
@@ -457,28 +486,42 @@ function ProjectMedia({ title, tag, srcs }: { title: string; tag: string; srcs: 
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      {srcs.map((src, n) => (
-        <img
-          key={src}
-          src={src}
-          alt={many ? `${title} — foto ${n + 1} de ${srcs.length}` : title}
-          loading="lazy"
-          width={1024}
-          height={768}
-          className={`absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105 ${n === i ? "opacity-100" : "opacity-0"}`}
-        />
-      ))}
+      {slides.map((s, n) =>
+        s.mov ? (
+          <video
+            ref={vid}
+            key={s.src}
+            src={s.src}
+            poster={srcs[0]}
+            muted
+            loop
+            playsInline
+            aria-label={`Video de ${title}`}
+            className={`absolute inset-0 size-full object-cover transition duration-700 ${n === i ? "opacity-100" : "opacity-0"}`}
+          />
+        ) : (
+          <img
+            key={s.src}
+            src={s.src}
+            alt={many ? s.label : title}
+            loading="lazy"
+            width={1024}
+            height={768}
+            className={`absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105 ${n === i ? "opacity-100" : "opacity-0"}`}
+          />
+        ),
+      )}
       <span className="absolute left-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground">
         {tag}
       </span>
       {many && (
         <div className="absolute bottom-3 right-3 flex gap-1.5">
-          {srcs.map((src, n) => (
+          {slides.map((s, n) => (
             <button
-              key={src}
+              key={s.src}
               type="button"
               onClick={() => setI(n)}
-              aria-label={`Ver la foto ${n + 1} de ${srcs.length} de ${title}`}
+              aria-label={`Ver ${s.label}`}
               aria-current={n === i}
               className={`h-1.5 rounded-full transition-all duration-300 ${n === i ? "w-5 bg-background" : "w-1.5 bg-background/50 hover:bg-background/80"}`}
             />
@@ -510,7 +553,7 @@ function Works() {
               {p.before ? (
                 <ComparisonMedia title={p.title} before={p.before} after={p.img} />
               ) : (
-                <ProjectMedia title={p.title} tag={p.tag} srcs={p.more ? [p.img, ...p.more] : [p.img]} />
+                <ProjectMedia title={p.title} tag={p.tag} srcs={p.more ? [p.img, ...p.more] : [p.img]} video={p.video} />
               )}
               <div className="p-6">
                 <h3 className="text-lg font-extrabold text-card-foreground">{p.title}</h3>
@@ -652,6 +695,8 @@ function Contact() {
                   <option>Obra comercial o industrial</option>
                   <option>Refacción o ampliación</option>
                   <option>Aislación térmica EIFS</option>
+                  <option>Dirección de obra</option>
+                  <option>Planos y trámites</option>
                   <option>Otro</option>
                 </select>
                 {errors.tipo && <span className="mt-1 block text-xs text-primary-glow">{errors.tipo}</span>}
