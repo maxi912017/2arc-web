@@ -6,8 +6,10 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import logo from "@/assets/logo-ar-dark.jpg.asset.json";
-import hero from "@/assets/proyecto-portada.webp.asset.json";
+import heroLeft from "@/assets/proyecto-1.webp.asset.json";
+import heroRight from "@/assets/proyecto-2.webp.asset.json";
 import logoVideo from "@/assets/logo-animado.mp4.asset.json";
+import logoWebm from "@/assets/logo-animado.webm.asset.json";
 import logoPoster from "@/assets/logo-poster.webp.asset.json";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
@@ -108,6 +110,7 @@ function Header() {
           <video autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
             aria-label="AR Constructora" width={480} height={156}
             className="h-12 w-auto max-w-[180px] object-contain motion-reduce:hidden md:h-16 md:max-w-[210px]">
+            <source src={logoWebm.url} type="video/webm" />
             <source src={logoVideo.url} type="video/mp4" />
             <img src={logoPoster.url} alt="AR Constructora" width={480} height={156} />
           </video>
@@ -139,7 +142,10 @@ function Header() {
 function Hero() {
   return (
     <section id="inicio" className="relative flex min-h-[100svh] items-center overflow-hidden pt-20">
-      <img src={hero.url} alt="Dos vistas contiguas del mismo proyecto de AR Constructora: fachada y acceso lateral" className="absolute inset-0 size-full object-cover" fetchPriority="high" width={1536} height={1020} />
+      <div className="absolute inset-0 grid grid-cols-2 gap-0">
+        <img src={heroLeft.url} alt="Fachada del proyecto de AR Constructora" className="size-full min-w-0 object-cover object-right" fetchPriority="high" width={1440} height={1912} />
+        <img src={heroRight.url} alt="Acceso lateral del mismo proyecto de AR Constructora" className="size-full min-w-0 object-cover object-left" fetchPriority="high" width={1440} height={1912} />
+      </div>
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute left-0 top-0 hidden h-full w-40 stripes opacity-30 md:block" />
       <div className="relative mx-auto w-full max-w-7xl px-4 py-16 md:px-8">

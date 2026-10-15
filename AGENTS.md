@@ -9,4 +9,4 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 
-- Store uploaded app media as Lovable Assets pointers; join contiguous project photos into one image so the seam survives responsive cropping, and serve header animation as a silent compressed MP4 with a static reduced-motion fallback to minimize load and preserve accessibility.
+- Store uploaded app media as Lovable Assets pointers; place contiguous project photos in equal gapless columns anchored to their shared seam to keep both visible at every viewport, and serve header animation as silent compressed WebM/MP4 with a static reduced-motion fallback for compatibility and accessibility.
