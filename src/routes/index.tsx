@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   Home, Factory, Hammer, ThermometerSnowflake, MapPin, Phone, Instagram, Facebook,
   ShieldCheck, ClipboardCheck, CalendarClock, HardHat, Menu, X, ArrowRight, CheckCircle2, MessageCircle,
@@ -8,8 +8,8 @@ import { z } from "zod";
 import logo from "@/assets/logo-ar-dark.jpg.asset.json";
 import heroLeft from "@/assets/proyecto-1.webp.asset.json";
 import heroRight from "@/assets/proyecto-2.webp.asset.json";
-import logoVideo from "@/assets/logo-animado.mp4.asset.json";
-import logoWebm from "@/assets/logo-animado.webm.asset.json";
+import logoVideo from "@/assets/logo-activo.mp4.asset.json";
+import logoWebm from "@/assets/logo-activo.webm.asset.json";
 import logoPoster from "@/assets/logo-poster.webp.asset.json";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
@@ -103,19 +103,51 @@ function WaButton({ children, href = WA_DEFAULT, className = "" }: { children: R
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const start = () => {
+      if (motion.matches || document.hidden) return;
+      video.muted = true;
+      video.defaultMuted = true;
+      void video.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    };
+    const updateMotion = () => {
+      if (motion.matches) {
+        video.pause();
+        setPlaying(false);
+      } else start();
+    };
+    start();
+    video.addEventListener("canplay", start);
+    document.addEventListener("visibilitychange", start);
+    document.addEventListener("pointerdown", start);
+    motion.addEventListener("change", updateMotion);
+    return () => {
+      video.removeEventListener("canplay", start);
+      document.removeEventListener("visibilitychange", start);
+      document.removeEventListener("pointerdown", start);
+      motion.removeEventListener("change", updateMotion);
+    };
+  }, []);
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-8">
-        <a href="#inicio" aria-label="AR Constructora, inicio">
-          <video autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
+        <a href="#inicio" aria-label="AR Constructora, inicio" className="relative block h-12 w-[148px] md:h-16 md:w-[197px]">
+          <video ref={videoRef} autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
+            onPlaying={() => setPlaying(true)} onError={() => setPlaying(false)}
             aria-label="AR Constructora" width={480} height={156}
-            className="h-12 w-auto max-w-[180px] object-contain motion-reduce:hidden md:h-16 md:max-w-[210px]">
-            <source src={logoWebm.url} type="video/webm" />
+            className={`absolute inset-0 size-full object-contain motion-reduce:hidden ${playing ? "opacity-100" : "opacity-0"}`}>
             <source src={logoVideo.url} type="video/mp4" />
+            <source src={logoWebm.url} type="video/webm" />
             <img src={logoPoster.url} alt="AR Constructora" width={480} height={156} />
           </video>
           <img src={logoPoster.url} alt="AR Constructora" width={480} height={156}
-            className="hidden h-12 w-auto max-w-[180px] object-contain motion-reduce:block md:h-16 md:max-w-[210px]" />
+            className={`absolute inset-0 size-full object-contain motion-reduce:opacity-100 ${playing ? "opacity-0" : "opacity-100"}`} />
         </a>
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV.map((n) => (
@@ -142,15 +174,15 @@ function Header() {
 function Hero() {
   return (
     <section id="inicio" className="relative flex min-h-[100svh] items-center overflow-hidden pt-20">
-      <div className="absolute inset-0 grid grid-cols-2 gap-0">
-        <img src={heroLeft.url} alt="Fachada del proyecto de AR Constructora" className="size-full min-w-0 object-cover object-right" fetchPriority="high" width={1440} height={1912} />
-        <img src={heroRight.url} alt="Acceso lateral del mismo proyecto de AR Constructora" className="size-full min-w-0 object-cover object-left" fetchPriority="high" width={1440} height={1912} />
+      <div className="absolute inset-x-0 bottom-0 grid aspect-[2880/1914] grid-cols-2 gap-0">
+        <img src={heroLeft.url} alt="Fachada del proyecto de AR Constructora" className="size-full min-w-0 object-cover object-right-bottom" fetchPriority="high" width={1440} height={1912} />
+        <img src={heroRight.url} alt="Acceso lateral del mismo proyecto de AR Constructora" className="size-full min-w-0 object-cover object-left-bottom" fetchPriority="high" width={1440} height={1914} />
       </div>
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute left-0 top-0 hidden h-full w-40 stripes opacity-30 md:block" />
-      <div className="relative mx-auto w-full max-w-7xl px-4 py-16 md:px-8">
+      <div className="relative mx-auto w-full max-w-7xl px-4 py-10 md:px-8">
         <p className="eyebrow animate-rise">General Pico · La Pampa</p>
-        <h1 className="animate-rise mt-5 max-w-4xl text-4xl font-black leading-[1.05] tracking-tight text-foreground md:text-6xl lg:text-7xl">
+        <h1 className="animate-rise mt-5 max-w-4xl text-4xl font-black leading-[1.05] tracking-tight text-foreground md:text-5xl lg:text-7xl">
           Construcción llave en mano y obras civiles en <span className="font-serif font-normal italic text-primary-glow">General Pico</span> y La Pampa
         </h1>
         <p className="animate-rise mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
@@ -162,7 +194,7 @@ function Hero() {
             Ver proyectos <ArrowRight className="size-4" />
           </a>
         </div>
-        <dl className="mt-16 grid max-w-2xl grid-cols-3 gap-6 border-t border-border pt-8">
+        <dl className="mt-10 grid max-w-2xl grid-cols-3 gap-6 border-t border-border pt-6">
           {[["135+", "obras publicadas"], ["100%", "dirección técnica"], ["M.M.O.", "profesional matriculado"]].map(([n, l]) => (
             <div key={l}><dt className="text-2xl font-black text-foreground md:text-4xl">{n}</dt><dd className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">{l}</dd></div>
           ))}
