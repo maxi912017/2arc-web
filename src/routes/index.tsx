@@ -73,49 +73,25 @@ const FILTERS: { id: Cat; label: string }[] = [
   { id: "refacciones", label: "Refacciones" },
   { id: "proceso", label: "Proceso constructivo" },
 ];
-const PROJECTS: {
+type Project = {
   cat: Exclude<Cat, "todas">;
   img: string;
   more?: string[];
+  before?: string;
   tag: string;
   title: string;
   text: string;
-}[] = [
+};
+const PROJECTS: Project[] = [
   { cat: "viviendas", img: imgResidencia, tag: "Llave en mano", title: "Residencia familiar 96 m²", text: "2 dormitorios, living-comedor y cocina, con orientación solar óptima y planos aprobados." },
   { cat: "comercial", img: imgNave, tag: "Nave logística", title: "Mayorista de Frutas y Verduras", text: "Estructura metálica de gran luz, piso H-30 para autoelevadores y sector de cámaras de frío." },
   { cat: "comercial", img: imgOficinas, tag: "Institucional", title: "Oficinas APAP General Pico", text: "Construcción y terminación integral con tabiquería técnica, iluminación y accesos confortables." },
   { cat: "comercial", img: imgGym, tag: "Adecuación", title: "Centro Moov Training", text: "Refacción de vivienda a consultorio kinésico y gimnasio funcional con apeos y refuerzos." },
   { cat: "refacciones", img: imgCocina, tag: "Refacciones", title: "Remodelación de cocina", text: "Demolición, cañerías e instalaciones eléctricas nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
-  { cat: "refacciones", img: imgBanioDespues, tag: "Refacciones", title: "Remodelación de baño", text: "Demolición de revoques, instalación de agua nueva, revestimientos cerámicos y colocación de sanitarios." },
+  { cat: "refacciones", img: imgBanioDespues, before: imgBanioAntes, tag: "Refacciones", title: "Remodelación de baño", text: "Demolición de revoques y contrapiso, instalación nueva de agua y cloacas, cerámicos, sanitarios y griferías." },
+  { cat: "refacciones", img: imgFachadaDespues, before: imgFachadaAntes, tag: "Refacciones", title: "Renovación de fachada en vivienda familiar", text: "Retiro del revoque deteriorado y fisurado, terminación continua con guardapolvos, acceso en piedra y recambio de carpinterías." },
   { cat: "proceso", img: imgLosa, more: [imgLosa2], tag: "Losas", title: "Llenado de losa con hormigón elaborado", text: "Armado de encofrados, apuntalamiento y llenado continuo de losa, con verificación de recubrimientos de acero." },
   { cat: "proceso", img: imgEifs, tag: "EIFS", title: "Aislación exterior y sellado de fisuras", text: "Placas de EPS de alta densidad con base coat y malla sobre muros con grietas reparadas." },
-];
-
-// Cada par se suma acá: el slider se renderiza a partir de esta lista.
-// tall = el par es vertical (9:16), para no recortar techo ni piso.
-const COMPARISONS: {
-  tag: string;
-  title: string;
-  text: string;
-  before: string;
-  after: string;
-  tall?: boolean;
-}[] = [
-  {
-    tag: "Antes y después",
-    title: "Renovación de fachada en vivienda familiar",
-    text: "Retiro del revoque deteriorado y fisurado, nueva terminación continua con guardapolvos, acceso revestido en piedra y recambio de carpinterías y portón de garage.",
-    before: imgFachadaAntes,
-    after: imgFachadaDespues,
-  },
-  {
-    tag: "Antes y después",
-    title: "Remodelación de baño en vivienda familiar",
-    text: "Demolición de revoques y contrapiso, instalación nueva de agua y cloacas, revoque y cerámicos nuevos, y colocación de sanitarios y griferías.",
-    before: imgBanioAntes,
-    after: imgBanioDespues,
-    tall: true,
-  },
 ];
 
 const PROCESS = [
@@ -392,74 +368,71 @@ function Services() {
   );
 }
 
-function ComparisonCard({ item }: { item: (typeof COMPARISONS)[number] }) {
+// Par antes/después: ocupa el mismo marco 4:3 de la grilla que las otras tarjetas.
+function ComparisonMedia({
+  title,
+  before,
+  after,
+}: {
+  title: string;
+  before: string;
+  after: string;
+}) {
   const [pos, setPos] = useState(50);
   const [active, setActive] = useState(false);
   return (
-    <figure
-      className={`animate-rise overflow-hidden rounded-sm border border-border bg-card ${item.tall ? "mx-auto w-full max-w-[380px]" : ""}`}
-    >
-      <div
-        className={`relative w-full select-none overflow-hidden ${item.tall ? "aspect-[9/16]" : "aspect-[4/3]"}`}
-      >
+    <div className="relative aspect-[4/3] w-full select-none overflow-hidden">
+      <img
+        src={after}
+        alt={`${title}: después`}
+        loading="lazy"
+        width={1024}
+        height={768}
+        className="absolute inset-0 size-full object-cover"
+      />
+      <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
         <img
-          src={item.after}
-          alt={`${item.title}: después`}
-          loading="lazy"
-          className="absolute inset-0 size-full object-cover object-bottom"
+          src={before}
+          alt={`${title}: antes`}
+          width={1024}
+          height={768}
+          className="size-full object-cover"
         />
-        <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
-          <img
-            src={item.before}
-            alt={`${item.title}: antes`}
-            className="size-full object-cover object-bottom"
-          />
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={0.5}
-          value={pos}
-          onChange={(e) => setPos(Number(e.target.value))}
-          onPointerDown={() => setActive(true)}
-          onPointerUp={() => setActive(false)}
-          onPointerCancel={() => setActive(false)}
-          onFocus={() => setActive(true)}
-          onBlur={() => setActive(false)}
-          aria-label={`Comparar el antes y el después de ${item.title}`}
-          className="absolute inset-0 z-10 size-full cursor-ew-resize appearance-none bg-transparent opacity-0 outline-none [touch-action:pan-y]"
-        />
-        <span
-          className={`pointer-events-none absolute left-4 top-4 rounded-sm border border-border bg-background/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition-opacity duration-300 ${pos < 14 ? "opacity-0" : "opacity-100"}`}
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={0.5}
+        value={pos}
+        onChange={(e) => setPos(Number(e.target.value))}
+        onPointerDown={() => setActive(true)}
+        onPointerUp={() => setActive(false)}
+        onPointerCancel={() => setActive(false)}
+        onFocus={() => setActive(true)}
+        onBlur={() => setActive(false)}
+        aria-label={`Comparar el antes y el después de ${title}`}
+        className="absolute inset-0 z-10 size-full cursor-ew-resize appearance-none bg-transparent opacity-0 outline-none [touch-action:pan-y]"
+      />
+      <span
+        className={`pointer-events-none absolute left-4 top-4 rounded-sm border border-border bg-background/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition-opacity duration-300 ${pos < 14 ? "opacity-0" : "opacity-100"}`}
+      >
+        Antes
+      </span>
+      <span
+        className={`pointer-events-none absolute right-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground transition-opacity duration-300 ${pos > 86 ? "opacity-0" : "opacity-100"}`}
+      >
+        Después
+      </span>
+      <div className="pointer-events-none absolute inset-y-0" style={{ left: `${pos}%` }}>
+        <div className="absolute inset-y-0 -left-px w-0.5 bg-background/90" />
+        <div
+          className={`absolute top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-border bg-background text-foreground shadow-elegant transition duration-200 ${active ? "scale-110 ring-2 ring-primary" : ""}`}
         >
-          Antes
-        </span>
-        <span
-          className={`pointer-events-none absolute right-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground transition-opacity duration-300 ${pos > 86 ? "opacity-0" : "opacity-100"}`}
-        >
-          Después
-        </span>
-        <div className="pointer-events-none absolute inset-y-0" style={{ left: `${pos}%` }}>
-          <div className="absolute inset-y-0 -left-px w-0.5 bg-background/90" />
-          <div
-            className={`absolute top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-border bg-background text-foreground shadow-elegant transition duration-200 ${active ? "scale-110 ring-2 ring-primary" : ""}`}
-          >
-            <ChevronsLeftRight className="size-5" strokeWidth={2.5} />
-          </div>
+          <ChevronsLeftRight className="size-5" strokeWidth={2.5} />
         </div>
       </div>
-      <figcaption className="p-6">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-primary-glow">
-          {item.tag}
-        </p>
-        <h3 className="mt-2 text-lg font-extrabold text-card-foreground">{item.title}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
-        <p className="mt-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-          <ChevronsLeftRight className="size-4" /> Arrastrá para comparar
-        </p>
-      </figcaption>
-    </figure>
+    </div>
   );
 }
 
@@ -533,26 +506,22 @@ function Works() {
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
             <article key={p.title} className="animate-rise group overflow-hidden rounded-sm border border-border bg-card">
-              <ProjectMedia title={p.title} tag={p.tag} srcs={p.more ? [p.img, ...p.more] : [p.img]} />
+              {p.before ? (
+                <ComparisonMedia title={p.title} before={p.before} after={p.img} />
+              ) : (
+                <ProjectMedia title={p.title} tag={p.tag} srcs={p.more ? [p.img, ...p.more] : [p.img]} />
+              )}
               <div className="p-6">
                 <h3 className="text-lg font-extrabold text-card-foreground">{p.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.text}</p>
+                {p.before && (
+                  <p className="mt-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <ChevronsLeftRight className="size-4" /> Arrastrá para comparar
+                  </p>
+                )}
               </div>
             </article>
           ))}
-        </div>
-        <div className="mx-auto mt-16 max-w-4xl">
-          <h3 className="text-xl font-black tracking-tight text-foreground md:text-2xl">
-            Antes y después de obra
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Deslizá la línea sobre la imagen para ver el estado original y el resultado final.
-          </p>
-          <div className="mt-6 space-y-6">
-            {COMPARISONS.map((c) => (
-              <ComparisonCard key={c.title} item={c} />
-            ))}
-          </div>
         </div>
         <div className="mt-12 text-center">
           <a href="https://www.instagram.com/ar_constructora/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary-glow hover:underline">
