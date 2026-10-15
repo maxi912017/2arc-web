@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Store uploaded app media as Lovable Assets pointers; join contiguous project photos into one image so the seam survives responsive cropping, and serve header animation as a silent compressed MP4 with a static reduced-motion fallback to minimize load and preserve accessibility.

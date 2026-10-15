@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 import { z } from "zod";
 import logo from "@/assets/logo-ar-dark.jpg.asset.json";
-import hero from "@/assets/hero.jpg";
+import hero from "@/assets/proyecto-portada.webp.asset.json";
+import logoVideo from "@/assets/logo-animado.mp4.asset.json";
+import logoPoster from "@/assets/logo-poster.webp.asset.json";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
@@ -103,7 +105,14 @@ function Header() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-8">
         <a href="#inicio" aria-label="AR Constructora, inicio">
-          <img src={logo.url} alt="AR Constructora" className="h-9 w-auto md:h-11" width={1280} height={373} />
+          <video autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
+            aria-label="AR Constructora" width={480} height={156}
+            className="h-12 w-auto max-w-[180px] object-contain motion-reduce:hidden md:h-16 md:max-w-[210px]">
+            <source src={logoVideo.url} type="video/mp4" />
+            <img src={logoPoster.url} alt="AR Constructora" width={480} height={156} />
+          </video>
+          <img src={logoPoster.url} alt="AR Constructora" width={480} height={156}
+            className="hidden h-12 w-auto max-w-[180px] object-contain motion-reduce:block md:h-16 md:max-w-[210px]" />
         </a>
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV.map((n) => (
@@ -130,7 +139,7 @@ function Header() {
 function Hero() {
   return (
     <section id="inicio" className="relative flex min-h-[100svh] items-center overflow-hidden pt-20">
-      <img src={hero} alt="Vivienda contemporánea construida por AR Constructora al atardecer" className="absolute inset-0 size-full object-cover" width={1920} height={1088} />
+      <img src={hero.url} alt="Dos vistas contiguas del mismo proyecto de AR Constructora: fachada y acceso lateral" className="absolute inset-0 size-full object-cover" fetchPriority="high" width={1536} height={1020} />
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute left-0 top-0 hidden h-full w-40 stripes opacity-30 md:block" />
       <div className="relative mx-auto w-full max-w-7xl px-4 py-16 md:px-8">
