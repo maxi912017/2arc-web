@@ -15,7 +15,8 @@ import logoPoster from "@/assets/logo-poster.webp";
 import aboutVideo from "@/assets/empresa.mp4";
 import aboutPoster from "@/assets/empresa-poster.jpg";
 import imgResidencia from "@/assets/obra-residencia.jpg";
-import imgNave from "@/assets/obra-nave.jpg";
+import imgNaveAntes from "@/assets/obra-nave-antes.webp";
+import imgNaveDespues from "@/assets/obra-nave-despues.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
 import imgLosa2 from "@/assets/obra-losa-2.jpg";
 import imgOficinas from "@/assets/obra-oficinas.jpg";
@@ -84,7 +85,7 @@ type Project = {
 };
 const PROJECTS: Project[] = [
   { cat: "viviendas", img: imgResidencia, tag: "Llave en mano", title: "Residencia familiar 96 m²", text: "2 dormitorios, living-comedor y cocina, con orientación solar óptima y planos aprobados." },
-  { cat: "comercial", img: imgNave, tag: "Nave logística", title: "Mayorista de Frutas y Verduras", text: "Estructura metálica de gran luz, piso H-30 para autoelevadores y sector de cámaras de frío." },
+  { cat: "comercial", img: imgNaveDespues, before: imgNaveAntes, tag: "Nave logística", title: "Mayorista de Frutas y Verduras", text: "Estructura metálica de gran luz, piso H-30 para autoelevadores y sector de cámaras de frío." },
   { cat: "comercial", img: imgOficinas, tag: "Institucional", title: "Oficinas APAP General Pico", text: "Construcción y terminación integral con tabiquería técnica, iluminación y accesos confortables." },
   { cat: "comercial", img: imgGym, tag: "Adecuación", title: "Centro Moov Training", text: "Refacción de vivienda a consultorio kinésico y gimnasio funcional con apeos y refuerzos." },
   { cat: "refacciones", img: imgCocina, tag: "Refacciones", title: "Remodelación de cocina", text: "Demolición, cañerías e instalaciones eléctricas nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
