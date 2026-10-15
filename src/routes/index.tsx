@@ -6,14 +6,14 @@ import {
   ChevronsLeftRight,
 } from "lucide-react";
 import { z } from "zod";
-import logo from "@/assets/logo-ar-dark.jpg.asset.json";
-import heroLeft from "@/assets/proyecto-1.webp.asset.json";
-import heroRight from "@/assets/proyecto-2.webp.asset.json";
-import logoVideo from "@/assets/logo-activo.mp4.asset.json";
-import logoWebm from "@/assets/logo-activo.webm.asset.json";
-import logoPoster from "@/assets/logo-poster.webp.asset.json";
-import aboutVideo from "@/assets/empresa.mp4.asset.json";
-import aboutPoster from "@/assets/empresa-poster.jpg.asset.json";
+import logo from "@/assets/logo-ar-dark.jpg";
+import heroLeft from "@/assets/proyecto-1.webp";
+import heroRight from "@/assets/proyecto-2.webp";
+import logoVideo from "@/assets/logo-activo.mp4";
+import logoWebm from "@/assets/logo-activo.webm";
+import logoPoster from "@/assets/logo-poster.webp";
+import aboutVideo from "@/assets/empresa.mp4";
+import aboutPoster from "@/assets/empresa-poster.jpg";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
@@ -201,15 +201,15 @@ function Header() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:h-20 md:px-8">
         <a href="#inicio" aria-label="AR Constructora, inicio" className="relative block h-12 w-[148px] md:h-16 md:w-[197px]">
-          <video ref={videoRef} autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
+          <video ref={videoRef} autoPlay loop muted playsInline preload="auto" poster={logoPoster}
             onPlaying={() => setPlaying(true)} onError={() => setPlaying(false)}
             aria-label="AR Constructora" width={480} height={156}
             className={`absolute inset-0 size-full object-contain ${playing ? "opacity-100" : "opacity-0"}`}>
-            <source src={logoVideo.url} type="video/mp4" />
-            <source src={logoWebm.url} type="video/webm" />
-            <img src={logoPoster.url} alt="AR Constructora" width={480} height={156} />
+            <source src={logoVideo} type="video/mp4" />
+            <source src={logoWebm} type="video/webm" />
+            <img src={logoPoster} alt="AR Constructora" width={480} height={156} />
           </video>
-          <img src={logoPoster.url} alt="AR Constructora" width={480} height={156}
+          <img src={logoPoster} alt="AR Constructora" width={480} height={156}
             className={`absolute inset-0 size-full object-contain ${playing ? "opacity-0" : "opacity-100"}`} />
         </a>
         <nav className="hidden items-center gap-8 lg:flex">
@@ -238,8 +238,8 @@ function Hero() {
   return (
     <section id="inicio" className="relative flex min-h-[100svh] items-center overflow-hidden pt-20">
       <div className="absolute inset-x-0 bottom-0 grid aspect-[2880/1914] grid-cols-2 gap-0">
-        <img src={heroLeft.url} alt="Fachada del proyecto de AR Constructora" className="size-full min-w-0 object-cover object-right-bottom" fetchPriority="high" width={1440} height={1912} />
-        <img src={heroRight.url} alt="Acceso lateral del mismo proyecto de AR Constructora" className="size-full min-w-0 object-cover object-left-bottom" fetchPriority="high" width={1440} height={1914} />
+        <img src={heroLeft} alt="Fachada del proyecto de AR Constructora" className="size-full min-w-0 object-cover object-right-bottom" fetchPriority="high" width={1440} height={1912} />
+        <img src={heroRight} alt="Acceso lateral del mismo proyecto de AR Constructora" className="size-full min-w-0 object-cover object-left-bottom" fetchPriority="high" width={1440} height={1914} />
       </div>
       <div className="absolute inset-0 bg-hero-overlay" />
       <div className="absolute left-0 top-0 hidden h-full w-40 stripes opacity-30 md:block" />
@@ -302,11 +302,11 @@ function About() {
             controls
             playsInline
             preload="metadata"
-            poster={aboutPoster.url}
+            poster={aboutPoster}
             aria-label="Video de presentación de AR Constructora"
             className="relative aspect-[9/16] w-full rounded-sm border border-border bg-card object-cover shadow-elegant"
           >
-            <source src={aboutVideo.url} type="video/mp4" />
+            <source src={aboutVideo} type="video/mp4" />
           </video>
           <p className="relative mt-3 text-center text-xs uppercase tracking-wider text-muted-foreground">
             Conocé AR Constructora · 0:36
@@ -704,7 +704,7 @@ function Footer() {
   return (
     <footer className="border-t border-border py-12 pb-28 md:pb-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 md:flex-row md:items-center md:justify-between md:px-8">
-        <img src={logo.url} alt="AR Constructora" className="h-10 w-auto" width={1280} height={373} loading="lazy" />
+        <img src={logo} alt="AR Constructora" className="h-10 w-auto" width={1280} height={373} loading="lazy" />
         <div className="flex gap-4">
           <a href="https://www.instagram.com/ar_constructora/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-foreground"><Instagram /></a>
           <a href="https://www.facebook.com/2053937308224508" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-muted-foreground hover:text-foreground"><Facebook /></a>
