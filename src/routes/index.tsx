@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   Home, Factory, Hammer, ThermometerSnowflake, MapPin, Phone, Instagram, Facebook,
   ShieldCheck, ClipboardCheck, CalendarClock, HardHat, Menu, X, ArrowRight, CheckCircle2, MessageCircle,
+  ChevronsLeftRight,
 } from "lucide-react";
 import { z } from "zod";
 import logo from "@/assets/logo-ar-dark.jpg.asset.json";
@@ -11,6 +12,8 @@ import heroRight from "@/assets/proyecto-2.webp.asset.json";
 import logoVideo from "@/assets/logo-activo.mp4.asset.json";
 import logoWebm from "@/assets/logo-activo.webm.asset.json";
 import logoPoster from "@/assets/logo-poster.webp.asset.json";
+import aboutVideo from "@/assets/empresa.mp4.asset.json";
+import aboutPoster from "@/assets/empresa-poster.jpg.asset.json";
 import imgResidencia from "@/assets/obra-residencia.jpg";
 import imgNave from "@/assets/obra-nave.jpg";
 import imgLosa from "@/assets/obra-losa.jpg";
@@ -18,6 +21,8 @@ import imgOficinas from "@/assets/obra-oficinas.jpg";
 import imgGym from "@/assets/obra-gym.jpg";
 import imgEifs from "@/assets/obra-eifs.jpg";
 import imgCocina from "@/assets/obra-cocina.jpg";
+import imgFachadaAntes from "@/assets/obra-fachada-antes.jpg";
+import imgFachadaDespues from "@/assets/obra-fachada-despues.jpg";
 
 const TITLE = "AR Constructora | Construcción llave en mano en General Pico, La Pampa";
 const DESC = "Viviendas llave en mano, naves industriales, refacciones y aislación térmica EIFS en General Pico. Dirección técnica matriculada y presupuesto pactado.";
@@ -37,11 +42,13 @@ export const Route = createFileRoute("/")({
 });
 
 const WA = "5492302591600";
+const LOGO_SCROLL_IDLE_MS = 300;
 const waLink = (msg: string) => `https://wa.me/${WA}?text=${encodeURIComponent(msg)}`;
 const WA_DEFAULT = waLink("Hola AR Constructora, quiero pedir un presupuesto para mi obra.");
 
 const NAV = [
   { href: "#inicio", label: "Inicio" },
+  { href: "#nosotros", label: "Nosotros" },
   { href: "#obras", label: "Obras" },
   { href: "#servicios", label: "Servicios" },
   { href: "#eifs", label: "Sistema EIFS" },
@@ -71,6 +78,17 @@ const PROJECTS: { cat: Exclude<Cat, "todas">; img: string; tag: string; title: s
   { cat: "refacciones", img: imgCocina, tag: "Antes y después", title: "Remodelación de cocina y baño", text: "Cañerías nuevas, revestimientos cerámicos, mesada de mármol y griferías monocomando." },
   { cat: "proceso", img: imgLosa, tag: "Losas", title: "Hormigonado de losa de 226 m²", text: "Apuntalamiento, encofrado y llenado continuo con hormigón elaborado y control de recubrimientos." },
   { cat: "proceso", img: imgEifs, tag: "EIFS", title: "Aislación exterior y sellado de fisuras", text: "Placas de EPS de alta densidad con base coat y malla sobre muros con grietas reparadas." },
+];
+
+// Cada par se suma acá: el slider se renderiza a partir de esta lista.
+const COMPARISONS: { tag: string; title: string; text: string; before: string; after: string }[] = [
+  {
+    tag: "Antes y después",
+    title: "Renovación de fachada en vivienda familiar",
+    text: "Retiro del revoque deteriorado y fisurado, nueva terminación continua con guardapolvos, acceso revestido en piedra y recambio de carpinterías y portón de garage.",
+    before: imgFachadaAntes,
+    after: imgFachadaDespues,
+  },
 ];
 
 const PROCESS = [
@@ -109,29 +127,47 @@ function Header() {
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const start = () => {
-      if (motion.matches || document.hidden) return;
+    let idleTimer: number | undefined;
+    let scrolling = false;
+
+    const play = () => {
       video.muted = true;
       video.defaultMuted = true;
       void video.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     };
-    const updateMotion = () => {
-      if (motion.matches) {
-        video.pause();
-        setPlaying(false);
-      } else start();
+    // El loop del logo se congela mientras se scrollea y vuelve a arrancar desde 0 al detenerse.
+    const onScroll = () => {
+      scrolling = true;
+      window.clearTimeout(idleTimer);
+      video.pause();
+      idleTimer = window.setTimeout(() => {
+        scrolling = false;
+        video.currentTime = 0;
+        play();
+      }, LOGO_SCROLL_IDLE_MS);
     };
-    start();
-    video.addEventListener("canplay", start);
-    document.addEventListener("visibilitychange", start);
-    document.addEventListener("pointerdown", start);
-    motion.addEventListener("change", updateMotion);
+    const onCanPlay = () => {
+      if (!scrolling && !document.hidden) play();
+    };
+    const onVisibility = () => {
+      if (document.hidden) video.pause();
+      else if (!scrolling) play();
+    };
+    const retry = () => {
+      if (!scrolling && video.paused) play();
+    };
+
+    play();
+    video.addEventListener("canplay", onCanPlay);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener("pointerdown", retry);
     return () => {
-      video.removeEventListener("canplay", start);
-      document.removeEventListener("visibilitychange", start);
-      document.removeEventListener("pointerdown", start);
-      motion.removeEventListener("change", updateMotion);
+      window.clearTimeout(idleTimer);
+      video.removeEventListener("canplay", onCanPlay);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibility);
+      document.removeEventListener("pointerdown", retry);
     };
   }, []);
   return (
@@ -141,13 +177,13 @@ function Header() {
           <video ref={videoRef} autoPlay loop muted playsInline preload="auto" poster={logoPoster.url}
             onPlaying={() => setPlaying(true)} onError={() => setPlaying(false)}
             aria-label="AR Constructora" width={480} height={156}
-            className={`absolute inset-0 size-full object-contain motion-reduce:hidden ${playing ? "opacity-100" : "opacity-0"}`}>
+            className={`absolute inset-0 size-full object-contain ${playing ? "opacity-100" : "opacity-0"}`}>
             <source src={logoVideo.url} type="video/mp4" />
             <source src={logoWebm.url} type="video/webm" />
             <img src={logoPoster.url} alt="AR Constructora" width={480} height={156} />
           </video>
           <img src={logoPoster.url} alt="AR Constructora" width={480} height={156}
-            className={`absolute inset-0 size-full object-contain motion-reduce:opacity-100 ${playing ? "opacity-0" : "opacity-100"}`} />
+            className={`absolute inset-0 size-full object-contain ${playing ? "opacity-0" : "opacity-100"}`} />
         </a>
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV.map((n) => (
@@ -214,6 +250,100 @@ function SectionTitle({ eyebrow, title, light = false }: { eyebrow: string; titl
   );
 }
 
+const ABOUT_FACTS = [
+  { icon: HardHat, label: "Responsable técnico", value: "M.M.O. Alexis Ruiz" },
+  { icon: MapPin, label: "Dónde trabajamos", value: "General Pico y toda La Pampa" },
+  {
+    icon: ClipboardCheck,
+    label: "Seguimiento",
+    value: "Dirección propia en obra, sin intermediarios",
+  },
+  { icon: ShieldCheck, label: "Respaldo", value: "Cálculo y ejecución bajo normativas vigentes" },
+];
+
+function About() {
+  return (
+    <section
+      id="nosotros"
+      className="relative overflow-hidden border-y border-border py-24 md:py-32"
+    >
+      <div className="absolute -left-20 top-1/3 hidden h-64 w-64 stripes opacity-20 lg:block" />
+      <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 md:px-8 lg:grid-cols-[minmax(0,380px)_1fr]">
+        <div className="reveal relative mx-auto w-full max-w-[340px]">
+          <div className="absolute -bottom-5 -right-5 -z-0 hidden h-28 w-28 stripes lg:block" />
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            poster={aboutPoster.url}
+            aria-label="Video de presentación de AR Constructora"
+            className="relative aspect-[9/16] w-full rounded-sm border border-border bg-card object-cover shadow-elegant"
+          >
+            <source src={aboutVideo.url} type="video/mp4" />
+          </video>
+          <p className="relative mt-3 text-center text-xs uppercase tracking-wider text-muted-foreground">
+            Conocé AR Constructora · 0:36
+          </p>
+        </div>
+        <div>
+          <SectionTitle
+            eyebrow="Nosotros"
+            title="Una obra bien hecha empieza por saber quién te responde"
+          />
+          <div className="reveal mt-8 space-y-5 text-muted-foreground">
+            <p>
+              AR Constructora es una empresa de General Pico que se hace cargo de tu proyecto
+              <strong className="text-foreground"> en cada etapa del proceso</strong>: la
+              planificación, el diseño y la ejecución de la obra hasta la entrega de llaves.
+            </p>
+            <p>
+              Detrás está el{" "}
+              <strong className="text-foreground">Maestro Mayor de Obras Alexis Ruiz</strong>, con
+              dirección técnica matriculada. Es la misma persona que planifica la obra la que la
+              supervisa en el día a día, con cálculo riguroso y cumplimiento de las normativas
+              vigentes.
+            </p>
+            <p>
+              Trabajamos con presupuesto pactado antes de empezar y plazos escritos, para que sepas
+              desde el primer día cuánto invertís y qué incluye.
+            </p>
+          </div>
+          <dl className="reveal mt-10 grid gap-6 sm:grid-cols-2">
+            {ABOUT_FACTS.map((f) => (
+              <div key={f.label} className="flex gap-4 border-l-2 border-primary pl-4">
+                <f.icon className="size-5 shrink-0 text-primary-glow" strokeWidth={1.5} />
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {f.label}
+                  </dt>
+                  <dd className="mt-1 text-sm font-semibold text-foreground">{f.value}</dd>
+                </div>
+              </div>
+            ))}
+          </dl>
+          <div className="reveal mt-10 flex flex-col gap-3 sm:flex-row">
+            <WaButton
+              href={waLink(
+                "Hola AR Constructora, vi el video de presentación y quiero hablar sobre mi proyecto.",
+              )}
+            >
+              Hablemos de tu proyecto
+            </WaButton>
+            <a
+              href="https://www.instagram.com/ar_constructora/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-sm border border-foreground/30 px-6 py-3.5 text-sm font-bold uppercase tracking-wider text-foreground transition hover:border-foreground hover:bg-foreground/5"
+            >
+              <Instagram className="size-4" /> Ver el día a día de obra
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Services() {
   return (
     <section id="servicios" className="bg-paper py-24 text-paper-foreground md:py-32">
@@ -232,6 +362,77 @@ function Services() {
         </div>
       </div>
     </section>
+  );
+}
+
+function ComparisonCard({ item }: { item: (typeof COMPARISONS)[number] }) {
+  const [pos, setPos] = useState(50);
+  const [active, setActive] = useState(false);
+  return (
+    <figure className="animate-rise overflow-hidden rounded-sm border border-border bg-card">
+      <div className="relative aspect-[4/3] w-full select-none overflow-hidden">
+        <img
+          src={item.after}
+          alt={`${item.title}: después`}
+          width={1440}
+          height={1080}
+          loading="lazy"
+          className="absolute inset-0 size-full object-cover object-bottom"
+        />
+        <div className="absolute inset-0" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}>
+          <img
+            src={item.before}
+            alt={`${item.title}: antes`}
+            width={1440}
+            height={1080}
+            className="size-full object-cover object-bottom"
+          />
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={0.5}
+          value={pos}
+          onChange={(e) => setPos(Number(e.target.value))}
+          onPointerDown={() => setActive(true)}
+          onPointerUp={() => setActive(false)}
+          onPointerCancel={() => setActive(false)}
+          onFocus={() => setActive(true)}
+          onBlur={() => setActive(false)}
+          aria-label={`Comparar el antes y el después de ${item.title}`}
+          className="absolute inset-0 z-10 size-full cursor-ew-resize appearance-none bg-transparent opacity-0 outline-none [touch-action:pan-y]"
+        />
+        <span
+          className={`pointer-events-none absolute left-4 top-4 rounded-sm border border-border bg-background/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition-opacity duration-300 ${pos < 14 ? "opacity-0" : "opacity-100"}`}
+        >
+          Antes
+        </span>
+        <span
+          className={`pointer-events-none absolute right-4 top-4 rounded-sm bg-primary px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-foreground transition-opacity duration-300 ${pos > 86 ? "opacity-0" : "opacity-100"}`}
+        >
+          Después
+        </span>
+        <div className="pointer-events-none absolute inset-y-0" style={{ left: `${pos}%` }}>
+          <div className="absolute inset-y-0 -left-px w-0.5 bg-background/90" />
+          <div
+            className={`absolute top-1/2 grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-border bg-background text-foreground shadow-elegant transition duration-200 ${active ? "scale-110 ring-2 ring-primary" : ""}`}
+          >
+            <ChevronsLeftRight className="size-5" strokeWidth={2.5} />
+          </div>
+        </div>
+      </div>
+      <figcaption className="p-6">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-primary-glow">
+          {item.tag}
+        </p>
+        <h3 className="mt-2 text-lg font-extrabold text-card-foreground">{item.title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+        <p className="mt-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <ChevronsLeftRight className="size-4" /> Arrastrá para comparar
+        </p>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -263,6 +464,19 @@ function Works() {
               </div>
             </article>
           ))}
+        </div>
+        <div className="mx-auto mt-16 max-w-4xl">
+          <h3 className="text-xl font-black tracking-tight text-foreground md:text-2xl">
+            Antes y después de obra
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Deslizá la línea sobre la imagen para ver el estado original y el resultado final.
+          </p>
+          <div className="mt-6 space-y-6">
+            {COMPARISONS.map((c) => (
+              <ComparisonCard key={c.title} item={c} />
+            ))}
+          </div>
         </div>
         <div className="mt-12 text-center">
           <a href="https://www.instagram.com/ar_constructora/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary-glow hover:underline">
@@ -435,6 +649,7 @@ function Index() {
       <Header />
       <main>
         <Hero />
+        <About />
         <Services />
         <Works />
         <Eifs />
