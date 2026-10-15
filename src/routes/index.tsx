@@ -24,6 +24,7 @@ import imgLosaVideo from "@/assets/obra-losa-video.mp4";
 import imgOficinas from "@/assets/obra-oficinas.jpg";
 import imgGym from "@/assets/obra-gym.jpg";
 import imgEifs from "@/assets/obra-eifs.jpg";
+import imgEifsInstalacion from "@/assets/obra-eifs-instalacion.jpg";
 import imgCocina from "@/assets/obra-cocina.jpg";
 import imgBanioAntes from "@/assets/obra-banio-antes.jpg";
 import imgBanioDespues from "@/assets/obra-banio-despues.jpg";
@@ -582,7 +583,7 @@ function Eifs() {
     <section id="eifs" className="relative overflow-hidden border-y border-border bg-card py-24 md:py-32">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 md:px-8 lg:grid-cols-2">
         <div className="reveal relative">
-          <img src={imgEifs} alt="Colocación de sistema EIFS en fachada" loading="lazy" width={1024} height={768} className="rounded-sm object-cover" />
+          <img src={imgEifsInstalacion} alt="Vivienda en obra con placas de EPS fijadas al muro de ladrillo y base coat con malla aplicado" loading="lazy" width={1200} height={670} className="rounded-sm object-cover" />
           <div className="absolute -bottom-4 -right-4 -z-0 hidden h-32 w-32 stripes md:block" />
         </div>
         <div className="reveal">
