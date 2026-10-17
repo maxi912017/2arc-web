@@ -95,8 +95,8 @@
   --paper-foreground: oklch(0.16 0.004 30);
   --whatsapp: oklch(0.68 0.17 150);
   --whatsapp-foreground: oklch(0.99 0 0);
-  --gradient-hero: linear-gradient(90deg, oklch(0.1 0.004 30 / 0.95) 0%, oklch(0.1 0.004 30 / 0.7) 50%, oklch(0.1 0.004 30 / 0.2) 100%);
-  --stripes: repeating-linear-gradient(115deg, var(--primary) 0 2px, transparent 2px 7px);
+  --gradient-hero: linear-gradient(90deg, oklch(0.1 0.004 30 / 0.8) 0%, oklch(0.1 0.004 30 / 0.55) 50%, oklch(0.1 0.004 30 / 0.15) 100%);
+  --stripes: repeating-linear-gradient(115deg, var(--primary) 0 2px, transparent 2px 28px);
   --shadow-elegant: 0 20px 50px -20px oklch(0.52 0.19 25 / 0.5);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -128,6 +128,8 @@ html { scroll-behavior: smooth; }
 body { font-family: var(--font-sans); }
 
 @utility stripes { background-image: var(--stripes); }
+@utility stripes-fade { mask-image: linear-gradient(to bottom, #000 0%, #000 68%, transparent 100%); }
+@utility stripes-fade-soft { mask-image: radial-gradient(closest-side, #000 20%, transparent 100%); }
 @utility bg-hero-overlay { background-image: var(--gradient-hero); }
 @utility shadow-elegant { box-shadow: var(--shadow-elegant); }
 @utility eyebrow {
